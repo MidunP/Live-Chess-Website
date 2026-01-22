@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "rootDir": "./backend1/src",
+    "outDir": "./backend1/dist",
+
+    "module": "nodenext",
+    "target": "esnext",
+
+    "types": ["node"],
+
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    "strict": true
+  },
+  "include": ["backend1/src"]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "f0709c55-3fa7-4bb1-84bb-6b54d0fbe9b1",
+    "player1": "white",
+    "player2": "black",
+    "moves": [
+      {
+        "from": "e2",
+        "to": "e4"
+      }
+    ],
+    "startTime": 1768667839648
+  }
+]
