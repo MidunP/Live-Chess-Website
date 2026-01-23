@@ -8,6 +8,7 @@ export declare class Game {
     makeMove(socket: WebSocket, move: {
         from: string;
         to: string;
+        promotion?: string;
     }): void;
     private safeSend;
 }

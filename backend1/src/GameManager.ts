@@ -34,7 +34,7 @@ export class GameManager {
         return;
       }
 
-      console.log("📩 Received:", message);
+
 
       // INIT GAME
       if (message.type === INIT_GAME) {
@@ -46,26 +46,23 @@ export class GameManager {
         } else {
           this.pendingUser = socket;
         }
-        return;
       }
 
-      // MOVE ✅ (this is the missing / important part)
       if (message.type === MOVE) {
-        console.log("inside move");
 
         const game = this.games.find(
           g => g.player1 === socket || g.player2 === socket
         );
 
         if (!game) {
-          console.log("❌ Game not found for this player");
           return;
         }
 
-        // IMPORTANT: pass message.move
-        game.makeMove(socket, message.move);
+
+        // IMPORTANT: pass message.move or message.payload
+        game.makeMove(socket, message.move || message.payload);
       }
     });
   }
 }
-// continue from tghat sent module changes to be added in the code dont forget start dfrok th youtube left over
+

@@ -26,39 +26,48 @@ class Game {
         });
     }
     makeMove(socket, move) {
+        // Validation
         console.log("inside makemove");
-        // 🔹 MISSING PART (tutorial debug)
-        console.log(this.board.moves().length % 2);
-        // Turn validation
-        if (this.board.moves().length % 2 === 0 && socket !== this.player1) {
+        console.log("received move:", move);
+        if (!move || !move.from || !move.to) {
+            console.log("❌ Invalid move payload:", move);
             return;
         }
-        if (this.board.moves().length % 2 === 1 && socket !== this.player2) {
+        const turn = this.board.turn(); // "w" | "b"
+        if (turn === "w" && socket !== this.player1) {
+            console.log("❌ Not player 1's turn");
             return;
         }
-        console.log("did not early return");
+        if (turn === "b" && socket !== this.player2) {
+            console.log("❌ Not player 2's turn");
+            return;
+        }
+        const normalizedMove = {
+            from: move.from,
+            to: move.to,
+            promotion: move.promotion ?? "q"
+        };
         let result;
         try {
-            result = this.board.move(move);
-            if (!result)
-                return;
+            result = this.board.move(normalizedMove);
         }
         catch (e) {
-            console.log(e);
+            console.error("Error making move:", e);
             return;
         }
-        console.log("move succeeded");
-        // Send MOVE to BOTH players
-        this.safeSend(this.player1, {
+        if (!result) {
+            console.log("❌ Invalid move according to chess rules");
+            return;
+        }
+        console.log("✅ Move succeeded:", normalizedMove);
+        // ✅ SEND MOVE TO OPPONENT ONLY
+        const opponent = turn === "w" ? this.player2 : this.player1;
+        this.safeSend(opponent, {
             type: message_1.MOVE,
-            payload: move
+            payload: normalizedMove
         });
-        this.safeSend(this.player2, {
-            type: message_1.MOVE,
-            payload: move
-        });
-        db_1.db.addMove(this.gameId, move);
-        // Game over
+        db_1.db.addMove(this.gameId, normalizedMove);
+        // ✅ GAME OVER HANDLING
         if (this.board.isGameOver()) {
             const winner = this.board.turn() === "w" ? "black" : "white";
             db_1.db.updateGameResult(this.gameId, winner);
