@@ -79,11 +79,13 @@ export class Game {
 
     // ✅ SEND MOVE TO OPPONENT
     const opponent = turn === "w" ? this.player2 : this.player1;
+    console.log(`Sending move to opponent (turn was ${turn})`);
 
     this.safeSend(opponent, {
       type: MOVE,
       payload: normalizedMove
     });
+    console.log("Move sent to opponent:", normalizedMove);
 
     db.addMove(this.gameId, normalizedMove);
 
