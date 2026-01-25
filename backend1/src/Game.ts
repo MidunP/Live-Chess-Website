@@ -7,15 +7,20 @@ export class Game {
   public player1UserId: string;
   public player2UserId: string;
   public gameId: string;
+  public player1Name: string;
+  public player2Name: string;
+  public ended: boolean = false;
   private board: Chess;
 
-  constructor(gameId: string, player1UserId: string, player2UserId: string) {
+  constructor(gameId: string, player1UserId: string, player2UserId: string, player1Name?: string, player2Name?: string) {
     this.gameId = gameId;
     this.player1UserId = player1UserId;
     this.player2UserId = player2UserId;
+    this.player1Name = player1Name || "Guest";
+    this.player2Name = player2Name || "Guest";
     this.board = new Chess();
 
-    db.addGame(this.gameId);
+    db.addGame(this.gameId, this.player1UserId, this.player2UserId);
 
     this.broadcast({
       type: INIT_GAME,
@@ -23,9 +28,15 @@ export class Game {
         gameId: this.gameId,
         whitePlayerId: this.player1UserId,
         blackPlayerId: this.player2UserId,
+        whitePlayerName: this.player1Name,
+        blackPlayerName: this.player2Name,
         fen: this.board.fen()
       }
     });
+  }
+
+  public getFen() {
+    return this.board.fen();
   }
 
   public broadcast(message: any) {
@@ -66,7 +77,7 @@ export class Game {
       return;
     }
 
-    console.log("Move succeeded, broadcasting to all");
+    console.log(`Move succeeded in game ${this.gameId}, broadcasting to both players`);
 
     // ✅ BROADCAST TO BOTH PLAYERS
     this.broadcast({
@@ -81,12 +92,31 @@ export class Game {
 
     // ✅ GAME OVER
     if (this.board.isGameOver()) {
-      const winner = this.board.turn() === "w" ? "black" : "white";
-      db.updateGameResult(this.gameId, winner);
+      this.ended = true;
+      let winner = null;
+      let reason = "draw";
+
+      if (this.board.isCheckmate()) {
+        winner = this.board.turn() === "w" ? "black" : "white";
+        reason = "checkmate";
+      } else if (this.board.isStalemate()) {
+        reason = "stalemate";
+      } else if (this.board.isThreefoldRepetition()) {
+        reason = "threefold repetition";
+      } else if (this.board.isInsufficientMaterial()) {
+        reason = "insufficient material";
+      } else if (this.board.isDraw()) {
+        reason = "draw";
+      }
+
+      db.updateGameResult(this.gameId, winner || "draw");
 
       this.broadcast({
         type: GAME_OVER,
-        payload: { winner }
+        payload: {
+          winner,
+          reason
+        }
       });
     }
   }

@@ -10,14 +10,23 @@ interface ChessboardProps {
     } | null)[][];
     chess: Chess;
     playerColor: 'white' | 'black' | null;
-    onMove: (move: { from: string; to: string }) => void;
+    onMove: (move: { from: string; to: string; promotion?: string }) => void;
 }
 
 export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProps) => {
     const [from, setFrom] = useState<Square | null>(null);
     const [legalMoves, setLegalMoves] = useState<string[]>([]);
-    // isDragging is unused but kept if needed for future styles
+    const [promotionMove, setPromotionMove] = useState<{ from: Square; to: Square } | null>(null);
     const dragImageRef = useRef<HTMLDivElement>(null);
+
+    // Check if move is a promotion
+    const isPromotion = (from: Square, to: Square): boolean => {
+        const piece = chess.get(from);
+        if (!piece || piece.type !== 'p') return false;
+        if (piece.color === 'w' && to[1] === '8') return true;
+        if (piece.color === 'b' && to[1] === '1') return true;
+        return false;
+    };
 
     // Check if player can move this piece
     const canMovePiece = (pieceColor: Color): boolean => {
@@ -45,9 +54,13 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
             }
 
             if (legalMoves.includes(square)) {
-                onMove({ from, to: square });
-                setFrom(null);
-                setLegalMoves([]);
+                if (isPromotion(from, square)) {
+                    setPromotionMove({ from, to: square });
+                } else {
+                    onMove({ from, to: square });
+                    setFrom(null);
+                    setLegalMoves([]);
+                }
             } else {
                 if (piece && canMovePiece(piece.color)) {
                     setFrom(square);
@@ -103,20 +116,74 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
         const fromSquare = e.dataTransfer.getData('text/plain') as Square;
 
         if (fromSquare && fromSquare !== toSquare && legalMoves.includes(toSquare)) {
-            onMove({ from: fromSquare, to: toSquare });
+            if (isPromotion(fromSquare, toSquare)) {
+                setPromotionMove({ from: fromSquare, to: toSquare });
+            } else {
+                onMove({ from: fromSquare, to: toSquare });
+            }
         }
 
         setFrom(null);
         setLegalMoves([]);
     };
 
+    const handlePromotionSelect = (pieceType: string) => {
+        if (promotionMove) {
+            onMove({ from: promotionMove.from, to: promotionMove.to, promotion: pieceType });
+            setPromotionMove(null);
+            setFrom(null);
+            setLegalMoves([]);
+        }
+    };
+
     const displayBoard = playerColor === 'black' ? [...board].reverse().map(row => [...row].reverse()) : board;
+
+    const promotionPieces = [
+        { type: 'q', label: 'Queen' },
+        { type: 'r', label: 'Rook' },
+        { type: 'b', label: 'Bishop' },
+        { type: 'n', label: 'Knight' }
+    ];
 
     return (
         <div className="relative">
+            {/* Promotion Overlay */}
+            {promotionMove && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-sm">
+                    <div className="bg-[#262626] p-6 rounded-xl shadow-2xl border border-gray-700 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-white text-lg font-bold">Choose Promotion</h3>
+                        <div className="flex gap-4">
+                            {promotionPieces.map((p) => (
+                                <button
+                                    key={p.type}
+                                    onClick={() => handlePromotionSelect(p.type)}
+                                    className="w-20 h-20 bg-[#383838] hover:bg-[#444444] rounded-lg flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 border border-gray-600 shadow-lg"
+                                >
+                                    <img
+                                        src={`/${playerColor === 'black' ? p.type : `${p.type.toUpperCase()} copy`}.png`}
+                                        alt={p.label}
+                                        className="w-14 h-14 object-contain"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => {
+                                setPromotionMove(null);
+                                setFrom(null);
+                                setLegalMoves([]);
+                            }}
+                            className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                        >
+                            Cancel Move
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div ref={dragImageRef} className="absolute -left-[9999px]" />
 
-            <div className="shadow-2xl rounded-sm overflow-hidden border-2 border-gray-800">
+            <div className={`shadow-2xl rounded-sm overflow-hidden border-2 border-gray-800 ${promotionMove ? 'blur-[2px]' : ''}`}>
                 {displayBoard.map((row, i) => {
                     const actualRow = playerColor === 'black' ? 7 - i : i;
                     return (
@@ -125,12 +192,10 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
                                 const actualCol = playerColor === 'black' ? 7 - j : j;
                                 const squareRepresentation = (String.fromCharCode(97 + actualCol) + "" + (8 - actualRow)) as Square;
 
-                                // Chess colors matching the image
                                 const isDark = (actualRow + actualCol) % 2 !== 0;
                                 const isSelected = from === squareRepresentation;
                                 const isLegalMove = legalMoves.includes(squareRepresentation);
 
-                                // Find king in check
                                 const isCheck = chess.isCheck();
                                 let isKingInCheck = false;
                                 if (isCheck) {
@@ -159,7 +224,6 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
                                         onDrop={(e) => handleDrop(e, squareRepresentation)}
                                         onClick={() => handleSquareClick(squareRepresentation, piece)}
                                     >
-                                        {/* Piece Images */}
                                         {piece ? (
                                             <img
                                                 className="w-14 h-14 object-contain select-none transition-transform active:scale-95 pointer-events-none"
@@ -173,7 +237,6 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
                                             />
                                         ) : ""}
 
-                                        {/* Legal move indicator */}
                                         {isLegalMove && (
                                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                 <div className={`rounded-full ${piece ? 'w-16 h-16 border-4 border-black opacity-10' : 'w-4 h-4 bg-black opacity-10'

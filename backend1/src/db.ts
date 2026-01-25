@@ -1,76 +1,105 @@
-import * as fs from 'fs';
-
-interface GameData {
-    id: string;
-    player1: string; // socket ID or placeholder
-    player2: string;
-    moves: any[];
-    winner?: string;
-    startTime: number;
-}
+import { PrismaClient } from '@prisma/client';
 
 export class DatabaseManager {
-    private games: Map<string, GameData>;
-    private FILE_PATH = 'games.json';
+    private prisma: PrismaClient;
 
     constructor() {
-        this.games = new Map();
-        this.loadGames();
+        this.prisma = new PrismaClient();
     }
 
-    private loadGames() {
-        try {
-            if (fs.existsSync(this.FILE_PATH)) {
-                const data = fs.readFileSync(this.FILE_PATH, 'utf-8');
-                const parsed = JSON.parse(data);
-                if (Array.isArray(parsed)) {
-                    parsed.forEach((game: GameData) => {
-                        this.games.set(game.id, game);
-                    });
-                }
+    public async addUser(email: string, passwordHash: string, username?: string) {
+        return await this.prisma.user.create({
+            data: {
+                email,
+                password: passwordHash,
+                username
             }
-        } catch (e) {
-            console.error("Error loading games:", e);
-        }
-    }
-
-    private saveGames() {
-        try {
-            fs.writeFileSync(this.FILE_PATH, JSON.stringify(Array.from(this.games.values()), null, 2));
-        } catch (e) {
-            console.error("Error saving games:", e);
-        }
-    }
-
-    public addGame(gameId: string) {
-        this.games.set(gameId, {
-            id: gameId,
-            player1: "white",
-            player2: "black",
-            moves: [],
-            startTime: Date.now()
         });
-        this.saveGames();
     }
 
-    public addMove(gameId: string, move: any) {
-        const game = this.games.get(gameId);
-        if (game) {
-            game.moves.push(move);
-            this.saveGames();
+    public async getUserByEmail(email: string) {
+        return await this.prisma.user.findUnique({
+            where: { email }
+        });
+    }
+
+    public async getUserById(id: string) {
+        return await this.prisma.user.findUnique({
+            where: { id }
+        });
+    }
+
+    public async addGame(gameId: string, whitePlayerId?: string, blackPlayerId?: string) {
+        // Prepare data object, only including IDs if they are valid UUIDs 
+        // (assuming guests used random strings that might not be in User table)
+        const data: any = {
+            id: gameId,
+            status: "IN_PROGRESS"
+        };
+
+        if (whitePlayerId && this.isValidUUID(whitePlayerId)) data.whitePlayerId = whitePlayerId;
+        if (blackPlayerId && this.isValidUUID(blackPlayerId)) data.blackPlayerId = blackPlayerId;
+
+        try {
+            return await this.prisma.game.create({ data });
+        } catch (e) {
+            console.error("Error adding game to DB:", e);
         }
     }
 
-    public updateGameResult(gameId: string, winner: string) {
-        const game = this.games.get(gameId);
-        if (game) {
-            game.winner = winner;
-            this.saveGames();
+    private isValidUUID(id: string) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+    }
+
+    public async addMove(gameId: string, move: { from: string, to: string, promotion?: string }) {
+        try {
+            // Get current move count to set moveNumber
+            const moveCount = await this.prisma.move.count({
+                where: { gameId }
+            });
+
+            return await this.prisma.move.create({
+                data: {
+                    gameId,
+                    from: move.from,
+                    to: move.to,
+                    notation: `${move.from}-${move.to}`,
+                    moveNumber: moveCount + 1
+                }
+            });
+        } catch (e) {
+            console.error("Error adding move to DB:", e);
         }
     }
 
-    public getGames() {
-        return Array.from(this.games.values());
+    public async updateGameResult(gameId: string, winner: string) {
+        let result: string;
+        if (winner === 'white') result = "WHITE_WINS";
+        else if (winner === 'black') result = "BLACK_WINS";
+        else result = "DRAW";
+
+        try {
+            return await this.prisma.game.update({
+                where: { id: gameId },
+                data: {
+                    status: "FINISHED",
+                    result: result as any
+                }
+            });
+        } catch (e) {
+            console.error("Error updating game result in DB:", e);
+        }
+    }
+
+    public async getGames() {
+        return await this.prisma.game.findMany({
+            include: {
+                whitePlayer: true,
+                blackPlayer: true,
+                moves: true
+            }
+        });
     }
 }
 

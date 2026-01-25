@@ -2,16 +2,17 @@ import React from 'react';
 
 interface GameOverModalProps {
     winner: string | null;
+    reason?: string;
     isOpen: boolean;
     onClose: () => void;
     onRematch?: () => void;
 }
 
-export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, isOpen, onClose, onRematch }) => {
+export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, reason, isOpen, onClose, onRematch }) => {
     if (!isOpen) return null;
 
-    const isDraw = winner === 'draw';
-    const displayWinner = winner ? winner.charAt(0).toUpperCase() + winner.slice(1) : 'No one';
+    const isDraw = winner === 'draw' || !winner;
+    const displayWinner = winner && winner !== 'draw' ? winner.charAt(0).toUpperCase() + winner.slice(1) : 'No one';
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -29,7 +30,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, isOpen, on
                     <h2 className="text-2xl font-bold text-white mb-1">
                         {isDraw ? "It's a Draw!" : `${displayWinner} Won!`}
                     </h2>
-                    <p className="text-gray-400 text-sm">Game Finished</p>
+                    <p className="text-gray-400 text-sm">{reason ? reason.charAt(0).toUpperCase() + reason.slice(1) : 'Game Finished'}</p>
                 </div>
 
                 {/* Content */}

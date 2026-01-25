@@ -2,7 +2,8 @@ import { WebSocket } from "ws";
 
 export class SocketManager {
     private static instance: SocketManager;
-    private userToSocket: Map<string, WebSocket> = new Map();
+    // Map userId to a Set of active WebSockets
+    private userToSockets: Map<string, Set<WebSocket>> = new Map();
     private socketToUser: Map<WebSocket, string> = new Map();
 
     private constructor() { }
@@ -15,20 +16,46 @@ export class SocketManager {
     }
 
     public addUser(userId: string, socket: WebSocket) {
-        this.userToSocket.set(userId, socket);
+        console.log(`[SocketManager] Linking user ${userId} to a new socket.`);
+
+        // Add to the set of sockets for this user
+        if (!this.userToSockets.has(userId)) {
+            this.userToSockets.set(userId, new Set());
+        }
+        this.userToSockets.get(userId)!.add(socket);
+
+        // Inverse mapping
         this.socketToUser.set(socket, userId);
+
+        console.log(`[SocketManager] User ${userId} now has ${this.userToSockets.get(userId)!.size} active socket(s).`);
     }
 
     public removeUser(socket: WebSocket) {
         const userId = this.socketToUser.get(socket);
         if (userId) {
-            this.userToSocket.delete(userId);
+            console.log(`[SocketManager] Socket closed for user ${userId}`);
+
+            const sockets = this.userToSockets.get(userId);
+            if (sockets) {
+                sockets.delete(socket);
+                if (sockets.size === 0) {
+                    this.userToSockets.delete(userId);
+                    console.log(`[SocketManager] All sockets closed for user ${userId}. Mapping cleared.`);
+                } else {
+                    console.log(`[SocketManager] User ${userId} still has ${sockets.size} active socket(s).`);
+                }
+            }
             this.socketToUser.delete(socket);
         }
     }
 
     public getSocket(userId: string) {
-        return this.userToSocket.get(userId);
+        // Return the first available open socket for basic checks
+        const sockets = this.userToSockets.get(userId);
+        if (sockets && sockets.size > 0) {
+            return Array.from(sockets)[0];
+        }
+        return null;
     }
 
     public getUserId(socket: WebSocket) {
@@ -36,9 +63,18 @@ export class SocketManager {
     }
 
     public broadcast(userId: string, message: any) {
-        const socket = this.userToSocket.get(userId);
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify(message));
+        const sockets = this.userToSockets.get(userId);
+        if (sockets && sockets.size > 0) {
+            console.log(`[SocketManager] Broadcasting ${message.type} to user ${userId} (${sockets.size} tabs)`);
+            const messageStr = JSON.stringify(message);
+
+            sockets.forEach(socket => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(messageStr);
+                }
+            });
+        } else {
+            console.log(`[SocketManager] Broadcast failed for ${userId}: No active sockets found.`);
         }
     }
 }

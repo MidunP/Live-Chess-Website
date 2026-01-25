@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String?
+  email     String   @unique
+  password  String
+  gamesAsWhite Game[] @relation("WhitePlayer")
+  gamesAsBlack Game[] @relation("BlackPlayer")
+  createdAt DateTime @default(now())
+}
+
+model Game {
+  id            String     @id @default(uuid())
+  whitePlayerId String?
+  blackPlayerId String?
+  whitePlayer   User?      @relation("WhitePlayer", fields: [whitePlayerId], references: [id])
+  blackPlayer   User?      @relation("BlackPlayer", fields: [blackPlayerId], references: [id])
+  status        String     @default("IN_PROGRESS") // "IN_PROGRESS", "FINISHED", "ABANDONED"
+  result        String?    // "WHITE_WINS", "BLACK_WINS", "DRAW"
+  moves         Move[]
+  createdAt     DateTime   @default(now())
+}
+
+model Move {
+  id        String   @id @default(uuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  from      String
+  to        String
+  notation  String?
+  moveNumber Int
+  createdAt DateTime @default(now())
+}
+
+// SQLite doesn't support enums well, using strings instead

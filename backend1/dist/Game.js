@@ -9,22 +9,32 @@ class Game {
     player1UserId;
     player2UserId;
     gameId;
+    player1Name;
+    player2Name;
+    ended = false;
     board;
-    constructor(gameId, player1UserId, player2UserId) {
+    constructor(gameId, player1UserId, player2UserId, player1Name, player2Name) {
         this.gameId = gameId;
         this.player1UserId = player1UserId;
         this.player2UserId = player2UserId;
+        this.player1Name = player1Name || "Guest";
+        this.player2Name = player2Name || "Guest";
         this.board = new chess_js_1.Chess();
-        db_1.db.addGame(this.gameId);
+        db_1.db.addGame(this.gameId, this.player1UserId, this.player2UserId);
         this.broadcast({
             type: message_1.INIT_GAME,
             payload: {
                 gameId: this.gameId,
                 whitePlayerId: this.player1UserId,
                 blackPlayerId: this.player2UserId,
+                whitePlayerName: this.player1Name,
+                blackPlayerName: this.player2Name,
                 fen: this.board.fen()
             }
         });
+    }
+    getFen() {
+        return this.board.fen();
     }
     broadcast(message) {
         SocketManager_1.socketManager.broadcast(this.player1UserId, message);
@@ -56,7 +66,7 @@ class Game {
             console.log("Move error:", e);
             return;
         }
-        console.log("Move succeeded, broadcasting to all");
+        console.log(`Move succeeded in game ${this.gameId}, broadcasting to both players`);
         // ✅ BROADCAST TO BOTH PLAYERS
         this.broadcast({
             type: message_1.MOVE,
@@ -68,11 +78,32 @@ class Game {
         db_1.db.addMove(this.gameId, normalizedMove);
         // ✅ GAME OVER
         if (this.board.isGameOver()) {
-            const winner = this.board.turn() === "w" ? "black" : "white";
-            db_1.db.updateGameResult(this.gameId, winner);
+            this.ended = true;
+            let winner = null;
+            let reason = "draw";
+            if (this.board.isCheckmate()) {
+                winner = this.board.turn() === "w" ? "black" : "white";
+                reason = "checkmate";
+            }
+            else if (this.board.isStalemate()) {
+                reason = "stalemate";
+            }
+            else if (this.board.isThreefoldRepetition()) {
+                reason = "threefold repetition";
+            }
+            else if (this.board.isInsufficientMaterial()) {
+                reason = "insufficient material";
+            }
+            else if (this.board.isDraw()) {
+                reason = "draw";
+            }
+            db_1.db.updateGameResult(this.gameId, winner || "draw");
             this.broadcast({
                 type: message_1.GAME_OVER,
-                payload: { winner }
+                payload: {
+                    winner,
+                    reason
+                }
             });
         }
     }

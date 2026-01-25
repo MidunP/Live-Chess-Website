@@ -1,97 +1,102 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = exports.DatabaseManager = void 0;
-const fs = __importStar(require("fs"));
+const client_1 = require("@prisma/client");
 class DatabaseManager {
-    games;
-    FILE_PATH = 'games.json';
+    prisma;
     constructor() {
-        this.games = new Map();
-        this.loadGames();
+        this.prisma = new client_1.PrismaClient();
     }
-    loadGames() {
-        try {
-            if (fs.existsSync(this.FILE_PATH)) {
-                const data = fs.readFileSync(this.FILE_PATH, 'utf-8');
-                const parsed = JSON.parse(data);
-                if (Array.isArray(parsed)) {
-                    parsed.forEach((game) => {
-                        this.games.set(game.id, game);
-                    });
-                }
+    async addUser(email, passwordHash, username) {
+        return await this.prisma.user.create({
+            data: {
+                email,
+                password: passwordHash,
+                username
             }
-        }
-        catch (e) {
-            console.error("Error loading games:", e);
-        }
-    }
-    saveGames() {
-        try {
-            fs.writeFileSync(this.FILE_PATH, JSON.stringify(Array.from(this.games.values()), null, 2));
-        }
-        catch (e) {
-            console.error("Error saving games:", e);
-        }
-    }
-    addGame(gameId) {
-        this.games.set(gameId, {
-            id: gameId,
-            player1: "white",
-            player2: "black",
-            moves: [],
-            startTime: Date.now()
         });
-        this.saveGames();
     }
-    addMove(gameId, move) {
-        const game = this.games.get(gameId);
-        if (game) {
-            game.moves.push(move);
-            this.saveGames();
+    async getUserByEmail(email) {
+        return await this.prisma.user.findUnique({
+            where: { email }
+        });
+    }
+    async getUserById(id) {
+        return await this.prisma.user.findUnique({
+            where: { id }
+        });
+    }
+    async addGame(gameId, whitePlayerId, blackPlayerId) {
+        // Prepare data object, only including IDs if they are valid UUIDs 
+        // (assuming guests used random strings that might not be in User table)
+        const data = {
+            id: gameId,
+            status: "IN_PROGRESS"
+        };
+        if (whitePlayerId && this.isValidUUID(whitePlayerId))
+            data.whitePlayerId = whitePlayerId;
+        if (blackPlayerId && this.isValidUUID(blackPlayerId))
+            data.blackPlayerId = blackPlayerId;
+        try {
+            return await this.prisma.game.create({ data });
+        }
+        catch (e) {
+            console.error("Error adding game to DB:", e);
         }
     }
-    updateGameResult(gameId, winner) {
-        const game = this.games.get(gameId);
-        if (game) {
-            game.winner = winner;
-            this.saveGames();
+    isValidUUID(id) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+    }
+    async addMove(gameId, move) {
+        try {
+            // Get current move count to set moveNumber
+            const moveCount = await this.prisma.move.count({
+                where: { gameId }
+            });
+            return await this.prisma.move.create({
+                data: {
+                    gameId,
+                    from: move.from,
+                    to: move.to,
+                    notation: `${move.from}-${move.to}`,
+                    moveNumber: moveCount + 1
+                }
+            });
+        }
+        catch (e) {
+            console.error("Error adding move to DB:", e);
         }
     }
-    getGames() {
-        return Array.from(this.games.values());
+    async updateGameResult(gameId, winner) {
+        let result;
+        if (winner === 'white')
+            result = "WHITE_WINS";
+        else if (winner === 'black')
+            result = "BLACK_WINS";
+        else
+            result = "DRAW";
+        try {
+            return await this.prisma.game.update({
+                where: { id: gameId },
+                data: {
+                    status: "FINISHED",
+                    result: result
+                }
+            });
+        }
+        catch (e) {
+            console.error("Error updating game result in DB:", e);
+        }
+    }
+    async getGames() {
+        return await this.prisma.game.findMany({
+            include: {
+                whitePlayer: true,
+                blackPlayer: true,
+                moves: true
+            }
+        });
     }
 }
 exports.DatabaseManager = DatabaseManager;
