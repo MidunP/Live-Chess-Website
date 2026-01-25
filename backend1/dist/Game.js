@@ -1,94 +1,79 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
-const ws_1 = require("ws");
 const chess_js_1 = require("chess.js");
 const message_1 = require("./message");
 const db_1 = require("./db");
+const SocketManager_1 = require("./SocketManager");
 class Game {
-    player1;
-    player2;
+    player1UserId;
+    player2UserId;
     gameId;
     board;
-    constructor(gameId, player1, player2) {
+    constructor(gameId, player1UserId, player2UserId) {
         this.gameId = gameId;
-        this.player1 = player1;
-        this.player2 = player2;
+        this.player1UserId = player1UserId;
+        this.player2UserId = player2UserId;
         this.board = new chess_js_1.Chess();
         db_1.db.addGame(this.gameId);
-        this.safeSend(this.player1, {
+        this.broadcast({
             type: message_1.INIT_GAME,
-            payload: { color: "white" }
-        });
-        this.safeSend(this.player2, {
-            type: message_1.INIT_GAME,
-            payload: { color: "black" }
+            payload: {
+                gameId: this.gameId,
+                whitePlayerId: this.player1UserId,
+                blackPlayerId: this.player2UserId,
+                fen: this.board.fen()
+            }
         });
     }
-    makeMove(socket, move) {
-        console.log("inside makemove");
-        console.log("received move:", move);
-        // ❌ invalid payload guard
-        if (!move || !move.from || !move.to) {
-            console.log("Invalid move payload");
+    broadcast(message) {
+        SocketManager_1.socketManager.broadcast(this.player1UserId, message);
+        SocketManager_1.socketManager.broadcast(this.player2UserId, message);
+    }
+    makeMove(userId, move) {
+        console.log(`makeMove called by ${userId}`);
+        // ✅ Turn check using userId
+        const currentTurn = this.board.turn(); // "w" or "b"
+        const authorizedUserId = currentTurn === 'w' ? this.player1UserId : this.player2UserId;
+        if (userId !== authorizedUserId) {
+            console.log(`Unauthorized move attempt by ${userId}. Expected ${authorizedUserId}`);
             return;
         }
-        // ✅ CORRECT TURN CHECK
-        const turn = this.board.turn(); // "w" or "b"
-        if (turn === "w" && socket !== this.player1) {
-            console.log("early return: not white's socket");
-            return;
-        }
-        if (turn === "b" && socket !== this.player2) {
-            console.log("early return: not black's socket");
-            return;
-        }
-        console.log("did not early return");
-        // ✅ NORMALIZE MOVE (IMPORTANT)
+        // ✅ NORMALIZE MOVE
         const normalizedMove = {
             from: move.from,
             to: move.to,
             promotion: move.promotion ?? "q"
         };
-        let result;
         try {
-            result = this.board.move(normalizedMove);
+            const result = this.board.move(normalizedMove);
             if (!result) {
                 console.log("Invalid chess move:", normalizedMove);
                 return;
             }
         }
         catch (e) {
-            console.log("move error:", e);
+            console.log("Move error:", e);
             return;
         }
-        console.log("move succeeded");
-        // ✅ SEND MOVE TO OPPONENT
-        const opponent = turn === "w" ? this.player2 : this.player1;
-        console.log(`Sending move to opponent (turn was ${turn})`);
-        this.safeSend(opponent, {
+        console.log("Move succeeded, broadcasting to all");
+        // ✅ BROADCAST TO BOTH PLAYERS
+        this.broadcast({
             type: message_1.MOVE,
-            payload: normalizedMove
+            payload: {
+                move: normalizedMove,
+                fen: this.board.fen()
+            }
         });
-        console.log("Move sent to opponent:", normalizedMove);
         db_1.db.addMove(this.gameId, normalizedMove);
         // ✅ GAME OVER
         if (this.board.isGameOver()) {
             const winner = this.board.turn() === "w" ? "black" : "white";
             db_1.db.updateGameResult(this.gameId, winner);
-            this.safeSend(this.player1, {
+            this.broadcast({
                 type: message_1.GAME_OVER,
                 payload: { winner }
             });
-            this.safeSend(this.player2, {
-                type: message_1.GAME_OVER,
-                payload: { winner }
-            });
-        }
-    }
-    safeSend(ws, message) {
-        if (ws.readyState === ws_1.WebSocket.OPEN) {
-            ws.send(JSON.stringify(message));
         }
     }
 }

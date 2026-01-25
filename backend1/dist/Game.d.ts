@@ -1,15 +1,14 @@
-import { WebSocket } from "ws";
 export declare class Game {
-    player1: WebSocket;
-    player2: WebSocket;
+    player1UserId: string;
+    player2UserId: string;
     gameId: string;
     private board;
-    constructor(gameId: string, player1: WebSocket, player2: WebSocket);
-    makeMove(socket: WebSocket, move: {
+    constructor(gameId: string, player1UserId: string, player2UserId: string);
+    broadcast(message: any): void;
+    makeMove(userId: string, move: {
         from: string;
         to: string;
         promotion?: string;
     }): void;
-    private safeSend;
 }
 //# sourceMappingURL=Game.d.ts.map
