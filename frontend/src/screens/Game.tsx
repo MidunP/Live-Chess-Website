@@ -179,8 +179,8 @@ export const Game = () => {
   }
 
   return (
-    <div className="flex justify-center items-start min-h-screen pt-8" style={{ backgroundColor: '#2b2b2b' }}>
-      <div className="flex gap-12 items-start">
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: '#2b2b2b' }}>
+      <div className="flex gap-12 items-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-full flex justify-between items-center bg-gray-800/80 px-4 py-2 rounded-lg border border-gray-700 mb-2">
             <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export const Game = () => {
           )}
         </div>
 
-        <div className="bg-gray-800/50 backdrop-blur-sm w-[280px] h-[640px] flex flex-col justify-start items-center p-6 rounded-xl border border-gray-700">
+        <div className="bg-gray-800/50 backdrop-blur-sm w-[280px] h-[576px] flex flex-col justify-start items-center p-6 rounded-xl border border-gray-700">
           {!gameStarted ? (
             <div className="flex flex-col items-center justify-center h-full">
               <Button onClick={() => {

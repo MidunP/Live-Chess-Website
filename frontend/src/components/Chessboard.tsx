@@ -212,7 +212,7 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
                                 return (
                                     <div
                                         key={j}
-                                        className={`w-[80px] h-[80px] flex justify-center items-center relative text-2xl font-bold 
+                                        className={`w-[72px] h-[72px] flex justify-center items-center relative text-2xl font-bold 
                                             ${isDark ? 'bg-[#769656]' : 'bg-[#eeeed2]'} 
                                             ${isSelected ? 'bg-yellow-200 opacity-90' : ''} 
                                             ${isKingInCheck ? 'bg-red-500 ring-4 ring-red-600 ring-inset shadow-[0_0_20px_rgba(239,68,68,0.5)] z-10' : ''} 
@@ -226,7 +226,7 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
                                     >
                                         {piece ? (
                                             <img
-                                                className="w-14 h-14 object-contain select-none transition-transform active:scale-95 pointer-events-none"
+                                                className="w-[52px] h-[52px] object-contain select-none transition-transform active:scale-95 pointer-events-none"
                                                 src={`/${piece.color === "b" ? piece.type : `${piece.type.toUpperCase()} copy`}.png`}
                                                 alt={`${piece.color}${piece.type}`}
                                                 style={{
@@ -239,7 +239,7 @@ export const Chessboard = ({ board, chess, playerColor, onMove }: ChessboardProp
 
                                         {isLegalMove && (
                                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                <div className={`rounded-full ${piece ? 'w-16 h-16 border-4 border-black opacity-10' : 'w-4 h-4 bg-black opacity-10'
+                                                <div className={`rounded-full ${piece ? 'w-[52px] h-[52px] border-4 border-black opacity-10' : 'w-4 h-4 bg-black opacity-10'
                                                     }`} />
                                             </div>
                                         )}
