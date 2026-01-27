@@ -29,12 +29,20 @@ class Game {
                 blackPlayerId: this.player2UserId,
                 whitePlayerName: this.player1Name,
                 blackPlayerName: this.player2Name,
-                fen: this.board.fen()
+                fen: this.board.fen(),
+                moves: []
             }
         });
     }
     getFen() {
         return this.board.fen();
+    }
+    getMoves() {
+        return this.board.history({ verbose: true }).map(m => ({
+            from: m.from,
+            to: m.to,
+            promotion: m.promotion
+        }));
     }
     broadcast(message) {
         SocketManager_1.socketManager.broadcast(this.player1UserId, message);

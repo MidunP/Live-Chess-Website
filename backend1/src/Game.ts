@@ -30,13 +30,22 @@ export class Game {
         blackPlayerId: this.player2UserId,
         whitePlayerName: this.player1Name,
         blackPlayerName: this.player2Name,
-        fen: this.board.fen()
+        fen: this.board.fen(),
+        moves: []
       }
     });
   }
 
   public getFen() {
     return this.board.fen();
+  }
+
+  public getMoves() {
+    return this.board.history({ verbose: true }).map(m => ({
+      from: m.from,
+      to: m.to,
+      promotion: m.promotion
+    }));
   }
 
   public broadcast(message: any) {

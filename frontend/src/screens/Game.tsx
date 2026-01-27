@@ -12,6 +12,7 @@ export const MOVE = "MOVE";
 export const GAME_OVER = "GAME_OVER";
 export const DEBUG = "DEBUG";
 export const ERROR = "ERROR";
+export const RESIGN = "RESIGN";
 
 const MOVE_SOUND_URL = "https://lichess1.org/assets/sound/standard/Move.mp3";
 const moveAudio = new Audio(MOVE_SOUND_URL);
@@ -120,14 +121,26 @@ export const Game = () => {
             setPlayerColor('black');
           }
 
-          if (fen) {
-            chess.load(fen);
-          } else {
+          if (message.payload.moves) {
             chess.reset();
+            message.payload.moves.forEach((m: any) => {
+              try {
+                chess.move(m);
+              } catch (e) {
+                console.error("Error replaying move:", m, e);
+              }
+            });
+            setMoves(message.payload.moves);
+          } else {
+            if (fen) {
+              chess.load(fen);
+            } else {
+              chess.reset();
+            }
+            setMoves([]); // Clear moves on new game
           }
           syncBoard();
           setGameStarted(true);
-          setMoves([]); // Clear moves on new game
           break;
 
         case MOVE:
@@ -230,6 +243,10 @@ export const Game = () => {
                 <button
                   onClick={() => {
                     if (window.confirm("Resign this game?")) {
+                      socket.send(JSON.stringify({
+                        type: RESIGN,
+                        userId
+                      }));
                       chess.reset();
                       syncBoard();
                       setGameStarted(false);

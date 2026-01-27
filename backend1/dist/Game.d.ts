@@ -8,6 +8,11 @@ export declare class Game {
     private board;
     constructor(gameId: string, player1UserId: string, player2UserId: string, player1Name?: string, player2Name?: string);
     getFen(): string;
+    getMoves(): {
+        from: import("chess.js").Square;
+        to: import("chess.js").Square;
+        promotion: import("chess.js").PieceSymbol | undefined;
+    }[];
     broadcast(message: any): void;
     makeMove(userId: string, move: {
         from: string;

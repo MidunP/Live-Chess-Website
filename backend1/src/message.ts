@@ -3,3 +3,4 @@ export const MOVE = "MOVE";
 export const GAME_OVER = "GAME_OVER";
 export const DEBUG = "DEBUG";
 export const ERROR = "ERROR";
+export const RESIGN = "RESIGN";
