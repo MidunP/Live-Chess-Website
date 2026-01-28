@@ -179,23 +179,23 @@ export const Game = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4 py-4 sm:py-0" style={{ backgroundColor: '#2b2b2b' }}>
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center lg:items-start w-full max-w-7xl">
-        <div className="flex flex-col items-center gap-3 sm:gap-4 w-full lg:w-auto">
-          <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-gray-800/80 px-3 sm:px-4 py-2 rounded-lg border border-gray-700 mb-2 gap-2 sm:gap-0">
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: '#2b2b2b' }}>
+      <div className="flex gap-12 items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-full flex justify-between items-center bg-gray-800/80 px-4 py-2 rounded-lg border border-gray-700 mb-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 rounded flex items-center justify-center text-gray-900 font-bold text-sm sm:text-base">W</div>
-              <span className="text-white font-semibold text-sm sm:text-base">{whitePlayerName}</span>
+              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-gray-900 font-bold">W</div>
+              <span className="text-white font-semibold">{whitePlayerName}</span>
             </div>
-            <div className="text-gray-400 font-bold text-sm sm:text-base">VS</div>
+            <div className="text-gray-400 font-bold">VS</div>
             <div className="flex items-center gap-2">
-              <span className="text-white font-semibold text-sm sm:text-base">{blackPlayerName}</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-700 rounded flex items-center justify-center text-white font-bold border border-gray-600 text-sm sm:text-base">B</div>
+              <span className="text-white font-semibold">{blackPlayerName}</span>
+              <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-white font-bold border border-gray-600">B</div>
             </div>
           </div>
 
           {playerColor && (
-            <div className={`px-3 sm:px-4 py-2 rounded-full text-white font-bold text-sm sm:text-base ${playerColor === 'white' ? 'bg-gray-200 text-gray-900' : 'bg-gray-800 border border-gray-600'
+            <div className={`px-4 py-2 rounded-full text-white font-bold ${playerColor === 'white' ? 'bg-gray-200 text-gray-900' : 'bg-gray-800 border border-gray-600'
               }`}>
               You are playing {playerColor.toUpperCase()}
             </div>
@@ -207,13 +207,13 @@ export const Game = () => {
             onMove={handleMove}
           />
           {gameStarted && (
-            <div className="text-gray-400 text-xs sm:text-sm mt-2">
+            <div className="text-gray-400 text-sm mt-2">
               {chess.turn() === 'w' ? "White's turn" : "Black's turn"}
             </div>
           )}
         </div>
 
-        <div className="bg-gray-800/50 backdrop-blur-sm w-full lg:w-[280px] min-h-[300px] lg:h-[576px] flex flex-col justify-start items-center p-4 sm:p-6 rounded-xl border border-gray-700">
+        <div className="bg-gray-800/50 backdrop-blur-sm w-[280px] h-[576px] flex flex-col justify-start items-center p-6 rounded-xl border border-gray-700">
           {!gameStarted ? (
             <div className="flex flex-col items-center justify-center h-full">
               <Button onClick={() => {
@@ -224,7 +224,7 @@ export const Game = () => {
                   isMatchmaking: true // BUFFIX: Explicit matchmaking only on Play button
                 }))
               }}>Play</Button>
-              <p className="text-gray-400 text-center mt-4 text-xs sm:text-sm">
+              <p className="text-gray-400 text-center mt-4 text-sm">
                 Click to find an opponent
               </p>
             </div>
@@ -235,8 +235,8 @@ export const Game = () => {
               </div>
 
               <div className="pt-4 border-t border-gray-700 flex flex-col items-center">
-                <p className="text-white font-semibold mb-1 text-sm sm:text-base">Game in Progress</p>
-                <p className="text-gray-400 text-xs mb-3 sm:mb-4">
+                <p className="text-white font-semibold mb-1">Game in Progress</p>
+                <p className="text-gray-400 text-xs mb-4">
                   {chess.turn() === 'w' ? "White's turn" : "Black's turn"}
                 </p>
 
@@ -254,7 +254,7 @@ export const Game = () => {
                       setMoves([]);
                     }
                   }}
-                  className="text-red-400 hover:text-red-500 text-xs font-semibold underline min-h-[44px] flex items-center"
+                  className="text-red-400 hover:text-red-500 text-xs font-semibold underline"
                 >
                   Resign
                 </button>

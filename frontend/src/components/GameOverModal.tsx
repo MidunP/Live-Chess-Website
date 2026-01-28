@@ -15,10 +15,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, reason, is
     const displayWinner = winner && winner !== 'draw' ? winner.charAt(0).toUpperCase() + winner.slice(1) : 'No one';
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 px-4">
-            <div className="bg-[#262421] w-full max-w-[400px] rounded-xl shadow-2xl border border-gray-700 overflow-hidden transform animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-[#262421] w-[400px] rounded-xl shadow-2xl border border-gray-700 overflow-hidden transform animate-in zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="relative p-4 sm:p-6 text-center border-b border-gray-800">
+                <div className="relative p-6 text-center border-b border-gray-800">
                     <button
                         onClick={onClose}
                         className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
@@ -27,22 +27,22 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, reason, is
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
+                    <h2 className="text-2xl font-bold text-white mb-1">
                         {isDraw ? "It's a Draw!" : `${displayWinner} Won!`}
                     </h2>
-                    <p className="text-gray-400 text-xs sm:text-sm">{reason ? reason.charAt(0).toUpperCase() + reason.slice(1) : 'Game Finished'}</p>
+                    <p className="text-gray-400 text-sm">{reason ? reason.charAt(0).toUpperCase() + reason.slice(1) : 'Game Finished'}</p>
                 </div>
 
                 {/* Content */}
-                <div className="p-4 sm:p-8 flex flex-col items-center gap-4 sm:gap-6">
+                <div className="p-8 flex flex-col items-center gap-6">
                     {/* Avatar/Icon Placeholder (Like Martin in the image) */}
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-700 rounded-full flex items-center justify-center relative overflow-hidden">
+                    <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                        <span className="text-3xl sm:text-4xl">🏆</span>
+                        <span className="text-4xl">🏆</span>
                     </div>
 
                     <div className="text-center">
-                        <p className="text-gray-200 font-medium text-sm sm:text-base">
+                        <p className="text-gray-200 font-medium">
                             "Great game! How about a rematch?"
                         </p>
                     </div>
@@ -71,10 +71,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, reason, is
                 </div>
 
                 {/* Actions */}
-                <div className="p-4 sm:p-6 bg-[#1f1e1b] flex flex-col gap-3">
+                <div className="p-6 bg-[#1f1e1b] flex flex-col gap-3">
                     <button
                         onClick={onClose}
-                        className="w-full py-3 sm:py-4 bg-[#81b64c] hover:bg-[#a3d16e] text-white font-bold text-lg sm:text-xl rounded-lg shadow-[0_4px_0_rgb(69,98,41)] active:translate-y-1 active:shadow-none transition-all min-h-[44px]"
+                        className="w-full py-4 bg-[#81b64c] hover:bg-[#a3d16e] text-white font-bold text-xl rounded-lg shadow-[0_4px_0_rgb(69,98,41)] active:translate-y-1 active:shadow-none transition-all"
                     >
                         Game Review
                     </button>
@@ -82,13 +82,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ winner, reason, is
                     <div className="flex gap-3">
                         <button
                             onClick={onRematch}
-                            className="flex-1 py-3 bg-[#3c3a37] hover:bg-[#4d4b48] text-gray-200 font-bold rounded-lg transition-colors text-sm sm:text-base min-h-[44px]"
+                            className="flex-1 py-3 bg-[#3c3a37] hover:bg-[#4d4b48] text-gray-200 font-bold rounded-lg transition-colors"
                         >
                             Rematch
                         </button>
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3 bg-[#3c3a37] hover:bg-[#4d4b48] text-gray-200 font-bold rounded-lg transition-colors text-sm sm:text-base min-h-[44px]"
+                            className="flex-1 py-3 bg-[#3c3a37] hover:bg-[#4d4b48] text-gray-200 font-bold rounded-lg transition-colors"
                         >
                             New Game
                         </button>
