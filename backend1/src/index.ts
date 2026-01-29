@@ -26,67 +26,67 @@ const gameManager = new GameManager();
 
 // Authentication Endpoints
 app.post("/signup", async (req, res) => {
-  const { email, password, username } = req.body;
+    const { email, password, username } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password required" });
-  }
-
-  try {
-    const existingUser = await db.getUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await db.addUser(email, passwordHash, username);
+    try {
+        const existingUser = await db.getUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-    res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username } });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Internal server error" });
-  }
+        const passwordHash = await bcrypt.hash(password, 10);
+        const user = await db.addUser(email, passwordHash, username);
+
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+        res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username } });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password required" });
-  }
-
-  try {
-    const user = await db.getUserByEmail(email);
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    try {
+        const user = await db.getUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-    res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Internal server error" });
-  }
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+        res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 wss.on("connection", (socket) => {
-  console.log("👤 New player connected");
-  gameManager.addUser(socket);
+    console.log("👤 New player connected");
+    gameManager.addUser(socket);
 });
 
 // Fallback to index.html for client-side routing (React Router)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`🚀 Chess server running on http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket server running on same port`);
+    console.log(`🚀 Chess server running on http://localhost:${PORT}`);
+    console.log(`🔌 WebSocket server running on same port`);
 });
