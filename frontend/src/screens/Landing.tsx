@@ -6,7 +6,7 @@ export const Landing = () => {
   const { user, logout, continueAsGuest } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#383838] flex flex-col items-center justify-center px-8 relative">
+    <div className="min-h-screen bg-[#312e2b] flex flex-col items-center justify-center px-8 relative">
       {/* Top Bar for Auth */}
       <div className="absolute top-8 right-8 flex gap-4">
         {!user ? (
@@ -19,7 +19,7 @@ export const Landing = () => {
             </button>
             <button
               onClick={() => navigate("/signup")}
-              className="px-6 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition-colors"
+              className="px-6 py-2 bg-[#81b64c] text-white font-bold rounded hover:bg-[#a3d160] transition-colors"
             >
               Sign Up
             </button>
@@ -48,32 +48,33 @@ export const Landing = () => {
         </div>
 
         {/* Content Section - Right Side */}
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-white text-5xl font-bold mb-4 leading-tight">
-            Play Chess Online<br />
-            on the #2 Site (Midun's)!
+        <div className="flex flex-col items-center text-center max-w-2xl">
+          <h1 className="text-white text-5xl font-extrabold mb-6 leading-[1.2] tracking-tight">
+            Play Chess Online on the <span className="text-[#81b64c]">#2 Site (Midun's)!</span>
           </h1>
 
-          <p className="text-gray-300 text-base mb-8">
-            Join my fanboy server<br />
-            kpr's largest chess community
-          </p>
+          <div className="text-gray-400 text-lg mb-10 space-y-1">
+            <p className="text-gray-100 font-semibold text-xl mb-3">Ready to Get Checkmated?</p>
+            <p>It may happen to anyone.</p>
+            <p>Our last loss was so embarrassing…</p>
+            <p className="italic text-gray-500 mt-4 border-l-2 border-[#81b64c]/30 pl-4 py-1">
+              …we stopped playing and started building.
+            </p>
+          </div>
 
           <div className="flex flex-col gap-4 items-center">
             {user ? (
               <button
                 onClick={() => navigate("/game")}
-                className="px-8 py-3 text-xl bg-green-500 hover:bg-green-700 text-white font-bold rounded shadow-lg transition-all transform hover:scale-105"
+                className="px-10 py-4 text-2xl bg-[#81b64c] hover:bg-[#a3d160] text-white font-extrabold rounded-xl transition-all"
               >
                 Play Online
               </button>
             ) : (
               <>
                 <button
-                  onClick={() => {
-                    navigate("/login")
-                  }}
-                  className="px-8 py-3 text-xl bg-green-500 hover:bg-green-700 text-white font-bold rounded shadow-lg transition-all"
+                  onClick={() => navigate("/login")}
+                  className="px-10 py-4 text-2xl bg-[#81b64c] hover:bg-[#a3d160] text-white font-extrabold rounded-xl transition-all"
                 >
                   Play Online
                 </button>
@@ -82,7 +83,7 @@ export const Landing = () => {
                     continueAsGuest();
                     navigate("/game");
                   }}
-                  className="px-6 py-2 text-lg bg-[#262626] border border-gray-600 hover:bg-[#333333] text-white font-semibold rounded transition-all"
+                  className="px-8 py-3 text-lg bg-[#262626] border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-bold rounded-xl transition-all hover:bg-[#2a2a2a]"
                 >
                   Play as Guest
                 </button>

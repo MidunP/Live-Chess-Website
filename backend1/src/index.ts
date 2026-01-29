@@ -4,6 +4,7 @@ import { GameManager } from "./GameManager";
 import express from "express";
 import http from "http";
 import cors from "cors";
+import path from "path";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { db } from "./db";
@@ -13,6 +14,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Serve static files from the frontend/dist directory
+const frontendPath = path.join(__dirname, "../../frontend/dist");
+app.use(express.static(frontendPath));
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -73,6 +78,11 @@ app.post("/login", async (req, res) => {
 wss.on("connection", (socket) => {
   console.log("👤 New player connected");
   gameManager.addUser(socket);
+});
+
+// Fallback to index.html for client-side routing (React Router)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 8080;
