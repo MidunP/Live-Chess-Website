@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+const apiUrl = import.meta.env.VITE_API_URL;
+const WS_URL = apiUrl
+  ? apiUrl.replace(/^https/, "wss").replace(/^http/, "ws")
+  : "ws://localhost:8080";
 
 export const useSocket = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);

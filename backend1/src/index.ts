@@ -13,7 +13,17 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : ["http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
 
 // Serve static files from the frontend/dist directory
 const frontendPath = path.join(__dirname, "../../frontend/dist");
@@ -87,6 +97,6 @@ app.get(/.*/, (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`🚀 Chess server running on http://localhost:${PORT}`);
+  console.log(`🚀 Chess server running on port ${PORT}`);
   console.log(`🔌 WebSocket server running on same port`);
 });
