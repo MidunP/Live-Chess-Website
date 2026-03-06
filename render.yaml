@@ -3,7 +3,7 @@ services:
     name: chess-backend
     runtime: node
     # Root directory is the repo root (where package.json lives)
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     # Render auto-assigns PORT; the app reads process.env.PORT already
     envVars:
