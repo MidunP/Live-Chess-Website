@@ -88,9 +88,9 @@ export const Game = () => {
     }
   }, [chess, playerColor, socket, userId, syncBoard]);
 
-  // Auto-rejoin / Session handshake - CRITICAL BUFFIX
+  // Auto-rejoin / Session handshake - only fires if game not yet started
   useEffect(() => {
-    if (socket && userId) {
+    if (socket && userId && !gameStarted) {
       console.log("[Sync] Handshaking with server...");
       socket.send(JSON.stringify({
         type: INIT_GAME,
@@ -99,7 +99,7 @@ export const Game = () => {
         isRejoin: true
       }));
     }
-  }, [socket, userId, user?.username]);
+  }, [socket, userId, user?.username, gameStarted]);
 
   // Message Handler
   useEffect(() => {
