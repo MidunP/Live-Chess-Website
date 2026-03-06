@@ -16,7 +16,14 @@ const db_1 = require("./db");
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-app.use((0, cors_1.default)());
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",")
+    : ["http://localhost:5173"];
+app.use((0, cors_1.default)({
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+}));
 // Serve static files from the frontend/dist directory
 const frontendPath = path_1.default.join(__dirname, "../../frontend/dist");
 app.use(express_1.default.static(frontendPath));
@@ -76,7 +83,7 @@ app.get(/.*/, (req, res) => {
 });
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-    console.log(`🚀 Chess server running on http://localhost:${PORT}`);
+    console.log(`🚀 Chess server running on port ${PORT}`);
     console.log(`🔌 WebSocket server running on same port`);
 });
 //# sourceMappingURL=index.js.map

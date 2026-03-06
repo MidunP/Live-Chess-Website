@@ -3,29 +3,33 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "build": "npx prisma generate --schema=backend1/prisma/schema.prisma && tsc",
+    "postinstall": "prisma generate --schema=backend1/prisma/schema.prisma",
+    "build": "tsc",
     "start": "node backend1/dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "chess.js": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "socket.io": "^4.8.3",
+    "prisma": "^5.22.0",
     "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@prisma/client": "^5.22.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.6",
     "@types/ws": "^8.18.1",
-    "prisma": "^5.22.0",
     "typescript": "^5.9.3"
   }
 }

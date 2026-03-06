@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: chess-backend
+    runtime: node
+    # Root directory is the repo root (where package.json lives)
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    # Render auto-assigns PORT; the app reads process.env.PORT already
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # The following must be set manually in the Render dashboard:
+      # DATABASE_URL  -> your Render PostgreSQL internal connection string
+      # JWT_SECRET    -> any long random secret string
+      # CORS_ORIGIN   -> your Vercel frontend URL, e.g. https://your-app.vercel.app
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

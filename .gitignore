@@ -1,0 +1,13 @@
+node_modules
+.env
+
+# SQLite dev database - never commit this
+*.db
+*.db-shm
+*.db-wal
+
+# Frontend build output (built by Vercel, not needed in repo)
+frontend/dist
+
+# Backend dist is NEEDED for Render — do NOT gitignore it unless using build step
+# backend1/dist
