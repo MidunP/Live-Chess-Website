@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "postinstall": "prisma generate --schema=backend1/prisma/schema.prisma",
+    "postinstall": "npx prisma generate --schema=backend1/prisma/schema.prisma",
     "build": "tsc",
     "start": "node backend1/dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts"
