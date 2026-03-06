@@ -43,7 +43,7 @@ export const Signup = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
-                            placeholder="grandmaster_midun"
+                            placeholder="chessmaster"
                         />
                     </div>
                     <div>
