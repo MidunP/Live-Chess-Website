@@ -7,7 +7,7 @@ The frontend is built using React.js and communicates with the backend server to
 
 This project focuses on component-based architecture, real-time updates, and clean UI design.
 
-Features
+Features :
 
 Interactive chessboard UI
 
