@@ -14,7 +14,7 @@ export const Login = () => {
         setError('');
         try {
             await login(email, password);
-            navigate('/');
+            navigate('/game');
         } catch (err: any) {
             setError(err.message);
         }
@@ -42,7 +42,7 @@ export const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
-                            placeholder="you@example.com"
+                            placeholder="Enter your email"
                             required
                         />
                     </div>

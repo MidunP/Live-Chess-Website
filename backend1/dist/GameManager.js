@@ -83,13 +83,9 @@ class GameManager {
                 // 2b. Rejoin Check (when no active game exists)
                 if (message.isRejoin || message.payload?.isRejoin) {
                     console.log(`[GameManager] Rejoin requested by ${userId} but no active game found. Idle.`);
-                    // CRITICAL: If they were in the queue, clear them. 
-                    // This prevents "auto-matching" after a reload if they were previously searching.
-                    if (this.pendingUser === userId) {
-                        console.log(`[GameManager] Clearing user ${userId} from matchmaking pool on reload.`);
-                        this.pendingUser = null;
-                        this.pendingUsername = null;
-                    }
+                    // NOTE: Do NOT clear the matchmaking queue here.
+                    // The user may have clicked Play and then the socket re-handshaked.
+                    // Clearing them here would break guest matchmaking.
                     return; // No game found, stop here.
                 }
                 // 2c. Explicit Matchmaking (Play Button)

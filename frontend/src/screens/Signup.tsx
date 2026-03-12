@@ -15,7 +15,7 @@ export const Signup = () => {
         setError('');
         try {
             await signup(email, password, username);
-            navigate('/');
+            navigate('/game');
         } catch (err: any) {
             setError(err.message);
         }
