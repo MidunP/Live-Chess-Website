@@ -6,17 +6,21 @@ export const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
         try {
             await login(email, password);
             navigate('/game');
         } catch (err: any) {
             setError(err.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -41,9 +45,10 @@ export const Login = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors disabled:opacity-50"
                             placeholder="Enter your email"
                             required
+                            disabled={isLoading}
                         />
                     </div>
                     <div>
@@ -52,16 +57,18 @@ export const Login = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors disabled:opacity-50"
                             placeholder="••••••••"
                             required
+                            disabled={isLoading}
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors text-lg"
+                        disabled={isLoading}
+                        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-800 disabled:cursor-wait text-white font-bold py-3 rounded transition-colors text-lg"
                     >
-                        Log In
+                        {isLoading ? 'Logging In... (Backend may take 50s to wake)' : 'Log In'}
                     </button>
                 </form>
 

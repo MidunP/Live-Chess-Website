@@ -40,11 +40,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = async (email: string, password: string) => {
-        const response = await fetch(`${BASE_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+        let response;
+        try {
+            response = await fetch(`${BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+        } catch (error: any) {
+            throw new Error("Unable to connect to server. It might be waking up, please wait a moment and try again.");
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error(`Server returned unexpected response. It might be waking up.`);
+        }
 
         if (!response.ok) {
             const data = await response.json();
@@ -60,11 +70,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signup = async (email: string, password: string, username?: string) => {
-        const response = await fetch(`${BASE_URL}/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, username }),
-        });
+        let response;
+        try {
+            response = await fetch(`${BASE_URL}/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, username }),
+            });
+        } catch (error: any) {
+            throw new Error("Unable to connect to server. It might be waking up, please wait a moment and try again.");
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error(`Server returned unexpected response. It might be waking up.`);
+        }
 
         if (!response.ok) {
             const data = await response.json();

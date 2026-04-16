@@ -9,7 +9,7 @@
   "scripts": {
     "build": "node node_modules/prisma/build/index.js generate --schema=backend1/prisma/schema.prisma && tsc",
     "start": "node backend1/dist/index.js",
-    "dev": "ts-node-dev --respawn src/index.ts"
+    "dev": "ts-node-dev --respawn backend1/src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -28,5 +28,8 @@
     "prisma": "^5.22.0",
     "typescript": "^5.9.3",
     "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^2.0.0"
   }
 }

@@ -7,17 +7,21 @@ export const Signup = () => {
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { signup } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
         try {
             await signup(email, password, username);
             navigate('/game');
         } catch (err: any) {
             setError(err.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -42,8 +46,9 @@ export const Signup = () => {
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors disabled:opacity-50"
                             placeholder="chessmaster"
+                            disabled={isLoading}
                         />
                     </div>
                     <div>
@@ -52,9 +57,10 @@ export const Signup = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors disabled:opacity-50"
                             placeholder="you@example.com"
                             required
+                            disabled={isLoading}
                         />
                     </div>
                     <div>
@@ -63,16 +69,18 @@ export const Signup = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors"
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-green-500 transition-colors disabled:opacity-50"
                             placeholder="••••••••"
                             required
+                            disabled={isLoading}
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded transition-colors text-lg"
+                        disabled={isLoading}
+                        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-800 disabled:cursor-wait text-white font-bold py-3 rounded transition-colors text-lg"
                     >
-                        Sign Up
+                        {isLoading ? 'Signing Up... (Backend may take 50s to wake)' : 'Sign Up'}
                     </button>
                 </form>
 
