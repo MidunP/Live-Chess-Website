@@ -1,26 +1,56 @@
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables immediately upon module import
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(process.cwd(), 'backend1/.env') });
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
+function getDatabaseUrl(): string {
+    if (process.env.DATABASE_URL) {
+        return process.env.DATABASE_URL;
+    }
+    const defaultPath = path.resolve(__dirname, '../prisma/dev.db');
+    return `file:${defaultPath}`;
+}
 
 export class DatabaseManager {
     private prisma: PrismaClient;
 
     constructor() {
-        this.prisma = new PrismaClient();
+        const url = getDatabaseUrl();
+        this.prisma = new PrismaClient({
+            datasources: {
+                db: {
+                    url
+                }
+            }
+        });
     }
 
     public async addUser(email: string, passwordHash: string, username?: string) {
+        const cleanEmail = email.trim().toLowerCase();
         return await this.prisma.user.create({
             data: {
-                email,
+                email: cleanEmail,
                 password: passwordHash,
-                username
+                username: username ? username.trim() : undefined
             }
         });
     }
 
     public async getUserByEmail(email: string) {
-        return await this.prisma.user.findUnique({
-            where: { email }
+        const cleanEmail = email.trim().toLowerCase();
+        let user = await this.prisma.user.findUnique({
+            where: { email: cleanEmail }
         });
+        if (!user && email !== cleanEmail) {
+            user = await this.prisma.user.findUnique({
+                where: { email }
+            });
+        }
+        return user;
     }
 
     public async getUserById(id: string) {
@@ -104,3 +134,4 @@ export class DatabaseManager {
 }
 
 export const db = new DatabaseManager();
+

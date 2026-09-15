@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const RAW_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '');
 
 interface User {
     id: string;
@@ -56,12 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             throw new Error(`Server returned unexpected response. It might be waking up.`);
         }
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json();
             throw new Error(data.message || 'Login failed');
         }
 
-        const { token, user: userData } = await response.json();
+        const { token, user: userData } = data;
         const fullUser = { ...userData, isGuest: false };
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(fullUser));
@@ -86,12 +88,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             throw new Error(`Server returned unexpected response. It might be waking up.`);
         }
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json();
             throw new Error(data.message || 'Signup failed');
         }
 
-        const { token, user: userData } = await response.json();
+        const { token, user: userData } = data;
         const fullUser = { ...userData, isGuest: false };
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(fullUser));

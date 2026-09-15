@@ -1,25 +1,56 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = exports.DatabaseManager = void 0;
 const client_1 = require("@prisma/client");
+const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+// Load environment variables immediately upon module import
+dotenv_1.default.config({ path: path_1.default.join(__dirname, '../.env') });
+dotenv_1.default.config({ path: path_1.default.join(process.cwd(), 'backend1/.env') });
+dotenv_1.default.config({ path: path_1.default.join(process.cwd(), '.env') });
+function getDatabaseUrl() {
+    if (process.env.DATABASE_URL) {
+        return process.env.DATABASE_URL;
+    }
+    const defaultPath = path_1.default.resolve(__dirname, '../prisma/dev.db');
+    return `file:${defaultPath}`;
+}
 class DatabaseManager {
     prisma;
     constructor() {
-        this.prisma = new client_1.PrismaClient();
+        const url = getDatabaseUrl();
+        this.prisma = new client_1.PrismaClient({
+            datasources: {
+                db: {
+                    url
+                }
+            }
+        });
     }
     async addUser(email, passwordHash, username) {
+        const cleanEmail = email.trim().toLowerCase();
         return await this.prisma.user.create({
             data: {
-                email,
+                email: cleanEmail,
                 password: passwordHash,
-                username
+                username: username ? username.trim() : undefined
             }
         });
     }
     async getUserByEmail(email) {
-        return await this.prisma.user.findUnique({
-            where: { email }
+        const cleanEmail = email.trim().toLowerCase();
+        let user = await this.prisma.user.findUnique({
+            where: { email: cleanEmail }
         });
+        if (!user && email !== cleanEmail) {
+            user = await this.prisma.user.findUnique({
+                where: { email }
+            });
+        }
+        return user;
     }
     async getUserById(id) {
         return await this.prisma.user.findUnique({

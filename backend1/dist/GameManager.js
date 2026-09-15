@@ -106,15 +106,21 @@ class GameManager {
                             console.log(`[GameManager] Pending user ${this.pendingUser} went stale. Replacing with ${userId}`);
                             this.pendingUser = userId;
                             this.pendingUsername = username;
+                            // Tell this player they're in the queue
+                            SocketManager_1.socketManager.broadcast(userId, { type: message_1.WAITING, payload: { message: "Waiting for opponent..." } });
                         }
                     }
                     else if (this.pendingUser === userId) {
                         console.log(`[GameManager] User ${userId} is already in the queue.`);
+                        // Re-send WAITING in case they refreshed
+                        SocketManager_1.socketManager.broadcast(userId, { type: message_1.WAITING, payload: { message: "Waiting for opponent..." } });
                     }
                     else {
                         this.pendingUser = userId;
                         this.pendingUsername = username;
                         console.log(`[GameManager] User ${userId} added to pool.`);
+                        // Tell this player they're in the queue
+                        SocketManager_1.socketManager.broadcast(userId, { type: message_1.WAITING, payload: { message: "Waiting for opponent..." } });
                     }
                 }
                 else {

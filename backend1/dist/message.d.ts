@@ -4,4 +4,5 @@ export declare const GAME_OVER = "GAME_OVER";
 export declare const DEBUG = "DEBUG";
 export declare const ERROR = "ERROR";
 export declare const RESIGN = "RESIGN";
+export declare const WAITING = "WAITING";
 //# sourceMappingURL=message.d.ts.map
