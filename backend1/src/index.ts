@@ -4,6 +4,16 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 dotenv.config({ path: path.join(process.cwd(), "backend1/.env") });
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
+// --- DATABASE URL SELF-CORRECTION ---
+// If DATABASE_URL is set to the wrong bare path (file:./dev.db), correct it.
+// Prisma resolves relative paths from CWD (project root).
+// The correct path for our SQLite db relative to project root is backend1/prisma/dev.db.
+if (process.env.DATABASE_URL === "file:./dev.db" || process.env.DATABASE_URL === "file:dev.db") {
+  const correctedPath = path.resolve(process.cwd(), "backend1/prisma/dev.db");
+  process.env.DATABASE_URL = `file:${correctedPath}`;
+  console.warn(`⚠️  DATABASE_URL auto-corrected to: file:${correctedPath}`);
+}
+
 import { WebSocketServer } from "ws";
 import { GameManager } from "./GameManager";
 import express from "express";
@@ -54,6 +64,16 @@ const gameManager = new GameManager();
 // Health check endpoint for deployment monitoring (Render/Vercel)
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// DB health check - verifies the database schema is correctly set up
+app.get("/db-health", async (req, res) => {
+  try {
+    const users = await db.getUserByEmail("health-check-nonexistent@check.com");
+    res.status(200).json({ status: "db_ok", db_url_set: !!process.env.DATABASE_URL });
+  } catch (e: any) {
+    res.status(500).json({ status: "db_error", error: e.message, db_url_set: !!process.env.DATABASE_URL });
+  }
 });
 
 // Authentication Endpoints
