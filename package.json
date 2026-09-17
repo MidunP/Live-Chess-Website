@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "node node_modules/prisma/build/index.js generate --schema=backend1/prisma/schema.prisma && node node_modules/prisma/build/index.js db push --schema=backend1/prisma/schema.prisma --accept-data-loss && node node_modules/typescript/bin/tsc",
+    "build": "node node_modules/prisma/build/index.js generate --schema=backend1/prisma/schema.prisma && node node_modules/typescript/bin/tsc",
     "start": "node backend1/dist/index.js",
     "dev": "ts-node-dev --respawn backend1/src/index.ts"
   },

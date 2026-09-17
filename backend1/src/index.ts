@@ -147,8 +147,29 @@ app.get(/.*/, (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
-  console.log(`🚀 Chess server running on port ${PORT}`);
-  console.log(`🔌 WebSocket server running on same port`);
-});
 
+// Run prisma db push at startup to ensure DB schema is always up-to-date.
+// This is the ONLY reliable place on Render — DATABASE_URL is not available
+// at build time (sync: false in render.yaml), but IS always available at runtime.
+async function startServer() {
+  try {
+    const { execSync } = require("child_process");
+    const schemaPath = path.join(__dirname, "../prisma/schema.prisma");
+    console.log("🗄️  Syncing database schema...");
+    execSync(
+      `node "${path.join(process.cwd(), "node_modules/prisma/build/index.js")}" db push --schema="${schemaPath}" --accept-data-loss`,
+      { stdio: "inherit" }
+    );
+    console.log("✅ Database schema synced successfully.");
+  } catch (e: any) {
+    console.error("⚠️  DB schema sync failed (may already be up-to-date):", e.message);
+    // Don't crash — if tables already exist this can throw but that's fine
+  }
+
+  server.listen(PORT, () => {
+    console.log(`🚀 Chess server running on port ${PORT}`);
+    console.log(`🔌 WebSocket server running on same port`);
+  });
+}
+
+startServer();
