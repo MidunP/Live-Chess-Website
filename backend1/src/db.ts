@@ -11,7 +11,8 @@ function getDatabaseUrl(): string {
     if (process.env.DATABASE_URL) {
         return process.env.DATABASE_URL;
     }
-    const defaultPath = path.resolve(__dirname, '../prisma/dev.db');
+    // Fallback: resolve from CWD (the project root) so it works in both dev and compiled
+    const defaultPath = path.resolve(process.cwd(), 'backend1/prisma/dev.db');
     return `file:${defaultPath}`;
 }
 
