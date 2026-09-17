@@ -8,12 +8,24 @@ dotenv.config({ path: path.join(process.cwd(), 'backend1/.env') });
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 function getDatabaseUrl(): string {
-    if (process.env.DATABASE_URL) {
-        return process.env.DATABASE_URL;
+    let raw = process.env.DATABASE_URL;
+    if (!raw) {
+        const defaultPath = path.resolve(process.cwd(), 'backend1/prisma/dev.db');
+        return `file:${defaultPath}`;
     }
-    // Fallback: resolve from CWD (the project root) so it works in both dev and compiled
-    const defaultPath = path.resolve(process.cwd(), 'backend1/prisma/dev.db');
-    return `file:${defaultPath}`;
+
+    let filePath = raw.startsWith('file:') ? raw.slice(5) : raw;
+    filePath = filePath.trim();
+
+    if (filePath === './dev.db' || filePath === 'dev.db') {
+        filePath = path.resolve(process.cwd(), 'backend1/prisma/dev.db');
+    } else if (!path.isAbsolute(filePath)) {
+        filePath = path.resolve(process.cwd(), filePath);
+    }
+
+    const finalUrl = `file:${filePath}`;
+    process.env.DATABASE_URL = finalUrl;
+    return finalUrl;
 }
 
 export class DatabaseManager {
